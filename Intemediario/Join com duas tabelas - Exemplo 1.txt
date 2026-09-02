@@ -1,0 +1,56 @@
+/*Join com duas tabelas - Exemplo 1 */
+
+WITH data_limite AS (
+    SELECT
+        order_id,
+        strftime('%Y-%m-%d', shipping_limit_date) AS data_limite
+    FROM tb_order_items
+),
+data_entrega AS (
+    SELECT
+        order_id,
+        date(order_delivered_customer_date) AS data_entrega
+    FROM tb_orders
+)
+
+SELECT
+    t1.order_id,
+    t1.data_limite,
+    t2.data_entrega,
+    CASE
+        WHEN t2.data_entrega > t1.data_limite THEN 'Atrasado'
+        ELSE 'No prazo'
+    END AS status_entrega
+FROM data_limite t1
+LEFT JOIN data_entrega t2
+    ON t2.order_id = t1.order_id;
+
+
+/*Só as entregas no prazo*/
+
+WITH data_limite AS (
+    SELECT
+        order_id,
+        strftime('%Y-%m-%d', shipping_limit_date) AS data_limite
+    FROM tb_order_items
+),
+data_entrega AS (
+    SELECT
+        order_id,
+        date(order_delivered_customer_date) AS data_entrega
+    FROM tb_orders
+)
+
+SELECT
+    t1.order_id,
+    t1.data_limite,
+    t2.data_entrega,
+    CASE
+        WHEN t2.data_entrega > t1.data_limite THEN 'Atrasado'
+        ELSE 'No prazo'
+    END AS status_entrega
+FROM data_limite t1
+LEFT JOIN data_entrega t2
+    ON t2.order_id = t1.order_id
+where t2.data_entrega <= t1.data_limite
+    

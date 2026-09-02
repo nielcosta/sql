@@ -1,0 +1,61 @@
+-- Bloco 1: CTE 'valor_total'
+-- Calcula o valor financeiro total de cada produto vendido por cada vendedor,
+-- somando o preço do produto ('price') com o valor do frete ('freight_value').
+with valor_total as(
+select 
+    product_id,
+    seller_id,
+    sum(price) + sum(freight_value) as valor_total
+from tb_order_items
+group by product_id, seller_id
+),
+
+-- Bloco 2: CTE 'produtos'
+-- Extrai a tabela de produtos para mapear cada 'product_id' 
+-- com o seu respectivo nome de categoria ('product_category_name').
+produtos as(
+select 
+    product_id,
+    product_category_name
+from tb_products
+),
+
+-- Bloco 3: CTE 'vendas_produto'
+-- Realiza a junção (JOIN) entre o valor total de vendas por produto/vendedor 
+-- e a tabela de produtos, unindo as informações financeiras com as suas categorias.
+vendas_produto as(
+select 
+    t1.seller_id,
+    t1.product_id,
+    t1.valor_total,
+    t2.product_category_name
+from valor_total t1
+join produtos t2 on t1.product_id = t2.product_id
+group by t1.seller_id, t1.product_id, t1.valor_total, t2.product_category_name
+)
+
+-- Bloco 4: Consulta Principal (SELECT Final)
+-- Agrupa os dados por vendedor ('seller_id') e faz a consolidação:
+-- 1. Mostra o valor total geral de vendas do vendedor.
+-- 2. Utiliza a agregação condicional (SUM + CASE WHEN) para separar 
+--    o faturamento por categorias específicas e agrupar o restante em 'outros'.
+SELECT 
+    seller_id,
+    SUM(valor_total) AS valor_total_geral,
+    SUM(CASE WHEN product_category_name LIKE 'alimentos%' THEN valor_total ELSE 0 END) AS alimentos,
+    SUM(CASE WHEN product_category_name LIKE 'construcao%' THEN valor_total ELSE 0 END) AS construcao,
+    SUM(CASE WHEN product_category_name LIKE 'eletrodomesticos%' THEN valor_total ELSE 0 END) AS eletrodomesticos,
+    SUM(CASE WHEN product_category_name LIKE 'fashion%' THEN valor_total ELSE 0 END) AS fashion,
+    SUM(CASE WHEN product_category_name LIKE 'livros%' THEN valor_total ELSE 0 END) AS livros,
+    SUM(CASE WHEN product_category_name LIKE 'moveis%' THEN valor_total ELSE 0 END) AS moveis,
+    SUM(CASE WHEN product_category_name LIKE 'telefonia%' THEN valor_total ELSE 0 END) AS telefonia,
+    SUM(CASE WHEN product_category_name NOT LIKE 'alimentos%' 
+              AND product_category_name NOT LIKE 'construcao%' 
+              AND product_category_name NOT LIKE 'eletrodomesticos%' 
+              AND product_category_name NOT LIKE 'fashion%' 
+              AND product_category_name NOT LIKE 'livros%' 
+              AND product_category_name NOT LIKE 'moveis%' 
+              AND product_category_name NOT LIKE 'telefonia%' 
+             THEN valor_total ELSE 0 END) AS outros
+FROM vendas_produto
+GROUP BY seller_id;

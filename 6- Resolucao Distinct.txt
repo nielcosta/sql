@@ -1,0 +1,4 @@
+/* Resolução de exercícios SQL Distinct */
+SELECT
+    distinct (product_category_name)
+FROM tb_products

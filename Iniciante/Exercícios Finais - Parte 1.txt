@@ -1,0 +1,63 @@
+/* Quantos produtos temos na categoria "artes*/
+SELECT
+count (DISTINCT(product_id))
+From tb_products
+WHERE product_category_name ='artes'
+
+/* Quantos produtos maiores que 5 litros */
+SELECT
+product_id,
+product_length_cm *product_height_cm *product_width_cm /1000 as litros
+From tb_products
+where litros >5
+
+/* Quantos produtos de beleza_saude menor que 1 litro */
+SELECT 
+product_id,
+product_category_name,
+product_length_cm *product_height_cm *product_width_cm /1000 as litros
+From tb_products 
+where product_category_name like  '%beleza_saude'
+and litros <1
+
+/* Apresentar um tamanho médio, tamanho máximo e mínimo por categoria */
+SELECT 
+product_id,
+product_category_name,
+avg (product_height_cm),
+max (product_height_cm),
+min (product_height_cm)
+From tb_products 
+where product_category_name is not null
+group by product_category_name
+
+
+/* Apresentar um tamanho médio, tamanho máximo e mínimo por categoria para os produtos com descrição maior que 100*/
+
+SELECT 
+product_id,
+product_category_name,
+avg (product_description_lenght) as média_tamanho_Descr,
+max (product_description_lenght) as Maior_tamanho_Descr,
+min (product_description_lenght) as Menor_tamanho_Descr
+From tb_products 
+where product_category_name is not null
+group by product_category_name
+having (product_description_lenght > 100)
+
+
+ /* Apresentar um tamanho médio, tamanho máximo e mínimo por categoria para os produtos com descrição maior que 100 e media maiores que 500 */
+
+SELECT 
+product_id,
+product_category_name,
+avg (product_description_lenght) as média_tamanho_Descr,
+max (product_description_lenght) as Maior_tamanho_Descr,
+min (product_description_lenght) as Menor_tamanho_Descr
+From tb_products 
+where product_category_name is not null
+group by product_category_name
+having (product_description_lenght > 100) and ( média_tamanho_Descr > 500) order by  média_tamanho_Descr
+
+
+

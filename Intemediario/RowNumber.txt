@@ -1,0 +1,17 @@
+/* 
+    RAnkear as vendas de produtos por vendedor */
+
+with seller as(
+select 
+    seller_id,
+    product_id,
+    count(DISTINCT order_id) as qtde_vendas,
+    round(sum(price), 2) as valor_vendas
+from tb_order_items
+group by seller_id, product_id
+order by qtde_vendas desc)
+
+select 
+*,
+row_number() over (partition by seller_id order by qtde_vendas desc, valor_vendas desc) as ranking
+ from seller

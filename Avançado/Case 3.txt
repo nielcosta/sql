@@ -1,0 +1,57 @@
+WITH total_Vendas AS (
+    -- 1. Agrupamos por pedido e vendedor, somando preço + frete
+    SELECT 
+        seller_id,
+        order_id,
+        SUM(price) + SUM(freight_value) AS total_venda
+    FROM tb_order_items
+    GROUP BY seller_id, order_id
+),
+
+tipo_Pagamentos_Pivoteado AS (
+    -- 2. Trazemos os pagamentos divididos por colunas no nível do pedido
+    SELECT 
+        order_id,
+        COALESCE(SUM(CASE WHEN payment_type = 'credit_card' THEN payment_value END), 0) AS val_credit_card,
+        COALESCE(SUM(CASE WHEN payment_type = 'boleto' THEN payment_value END), 0) AS val_boleto,
+        COALESCE(SUM(CASE WHEN payment_type = 'voucher' THEN payment_value END), 0) AS val_voucher,
+        COALESCE(SUM(CASE WHEN payment_type = 'debit_card' THEN payment_value END), 0) AS val_debit_card
+    FROM tb_order_payments
+    GROUP BY order_id
+),
+
+cruzamento AS (
+    -- 3. Unimos as vendas com os pagamentos já agregados por pedido
+    SELECT 
+        t1.seller_id,
+        t1.total_venda,
+        t2.val_credit_card,
+        t2.val_boleto,
+        t2.val_voucher,
+        t2.val_debit_card
+    FROM total_Vendas t1
+    LEFT JOIN tipo_Pagamentos_Pivoteado t2
+      ON t1.order_id = t2.order_id
+),
+
+consolidado_vendedor AS (
+    -- 4. Consolidamos os totais por vendedor
+    SELECT 
+        seller_id,
+        SUM(total_venda) AS total_venda,
+        SUM(val_credit_card) AS total_credit_card,
+        SUM(val_boleto) AS total_boleto,
+        SUM(val_voucher) AS total_voucher,
+        SUM(val_debit_card) AS total_debit_card
+    FROM cruzamento
+    GROUP BY seller_id
+)
+-- 5. Seleção final com o arredondamento para 2 casas decimais (ROUND)
+SELECT 
+    seller_id,
+    total_venda,
+    ROUND(total_credit_card / NULLIF(total_venda, 0), 2) AS prop_credit_card,
+    ROUND(total_boleto / NULLIF(total_venda, 0), 2) AS prop_boleto,
+    ROUND(total_voucher / NULLIF(total_venda, 0), 2) AS prop_voucher,
+    ROUND(total_debit_card / NULLIF(total_venda, 0), 2) AS prop_debit_card
+FROM consolidado_vendedor;

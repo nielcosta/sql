@@ -1,0 +1,12 @@
+/* Resolução de exercícios SQL Where In -1*/
+SELECT
+    *
+FROM tb_customers
+where customer_state in ('SP', 'RJ')
+
+
+/* Resolução de exercícios SQL Where In -2*/
+SELECT
+    *
+FROM tb_order_reviews
+where review_score in (3, 4, 5)

@@ -1,0 +1,65 @@
+/*Pegar o nome e preço dos Produtos usando LEFT Join entre duas tabelas*/
+
+SELECT
+P1.product_id as ID_Produto,
+P1.product_category_name as Categoria_Produto,
+O1.price
+from tb_products as P1
+left join tb_order_items as O1
+ON P1.product_id = O1.product_id
+
+/*Pegar o Vendedor e Total dos preços dos Produtos cadastrados por ele usando LEFT Join entre duas tabelas*/
+
+SELECT
+S1.seller_id as ID_Vendedor,
+sum(O1.price) as total
+from tb_sellers as S1
+left JOIN tb_order_items as O1
+on S1.seller_id = O1.seller_id
+group by S1.seller_id
+having total > 60.000
+order by O1.price DESC
+
+/* Verificar status e tipo de pagamento usando duas tabelas com join */
+SELECT 
+t1.order_id,
+t1.order_status,
+t2.payment_type
+FROM tb_orders as t1
+left join tb_order_payments as t2
+on t1.order_id = t2.order_id
+
+/* Verificar status e tipo de pagamento usando duas tabelas com inner join fazendo uma interseção entre elas - O que tem iguais entre se */
+SELECT 
+t1.order_id,
+t1.order_status,
+t2.payment_type
+FROM tb_orders as t1
+inner join tb_order_payments as t2
+on t1.order_id = t2.order_id
+
+/* Verificar vendas por Estado - Join III _Cliente */
+SELECT 
+t2.customer_state as Estado,
+sum (t3.price) as Total_Vendas
+FROM tb_orders t1
+left join tb_customers t2
+on t1.customer_id = t2.customer_id
+left join tb_order_items t3
+on t3.order_id = t1.order_id
+group by t2.customer_state
+order by Total_Vendas desc
+
+/* Verificar vendas por Estado - Join III _Vendedores */
+SELECT 
+   t1.seller_state,
+   sum(t2.price),
+   t3.order_status
+    
+From tb_sellers t1
+	left join tb_order_items t2
+	on t1.seller_id = t2.seller_id
+    left join tb_orders t3
+    on t2.order_id = t3.order_id
+    where t3.order_status = 'delivered'
+group by t1.seller_state

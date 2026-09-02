@@ -1,0 +1,51 @@
+/*Resolução do Programa */
+WITH sellers AS (
+    SELECT 
+        seller_id,
+        seller_state
+    FROM tb_sellers
+),
+
+pedido AS (
+    SELECT 
+        seller_id,
+        order_id,
+        COUNT(DISTINCT order_id) AS qtde_pedidos,
+        SUM(price) AS vendas_totais,
+        SUM(freight_value) AS frete,
+        SUM(price) + SUM(freight_value) AS total_pedido
+    FROM tb_order_items
+    GROUP BY seller_id, order_id
+),
+
+tipo_pagamento AS (
+    SELECT
+        order_id,
+        SUM(CASE WHEN payment_type = 'credit_card' THEN payment_value ELSE 0 END) AS cartao_credito,
+        SUM(CASE WHEN payment_type = 'boleto' THEN payment_value ELSE 0 END) AS boleto,
+        SUM(CASE WHEN payment_type = 'voucher' THEN payment_value ELSE 0 END) AS voucher,
+        SUM(CASE WHEN payment_type = 'debit_card' THEN payment_value ELSE 0 END) AS cartao_debito
+    FROM tb_order_payments
+    GROUP BY order_id
+)
+
+SELECT
+    t1.seller_id,
+    t1.seller_state,
+    SUM(t2.qtde_pedidos) AS qtde_pedidos,
+    SUM(t2.vendas_totais) AS vendas_totais,
+    SUM(t2.frete) AS frete,
+    coalesce(SUM(t2.total_pedido),0) AS total_pedido,
+    coalesce(SUM(t3.cartao_credito),0) AS cartao_credito,
+    coalesce(SUM(t3.boleto),0) AS boleto,
+    coalesce(SUM(t3.voucher),0) AS voucher,
+    coalesce(SUM(t3.cartao_debito),0) AS cartao_debito
+FROM sellers t1
+LEFT JOIN pedido t2
+    ON t1.seller_id = t2.seller_id
+LEFT JOIN tipo_pagamento t3
+    ON t2.order_id = t3.order_id
+GROUP BY
+    t1.seller_id,
+    t1.seller_state
+ORDER BY vendas_totais DESC;

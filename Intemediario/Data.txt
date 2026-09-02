@@ -1,0 +1,6 @@
+/*Trabalhando com datas */
+
+select 
+	order_id,
+   	strftime('%Y-%m-%d',order_approved_at) as date
+from tb_orders

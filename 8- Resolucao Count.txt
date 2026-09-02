@@ -1,0 +1,15 @@
+/* Resolução de exercícios SQL Count. */
+
+SELECT
+   count(review_score) as review_count
+FROM tb_order_reviews
+where review_score >= 4
+
+
+/* Resolução de exercícios SQL Count - Exercício 2 */
+
+SELECT
+  product_category_name,
+    count(product_category_name) as total
+FROM tb_products
+where product_category_name like 'construcao%' and product_weight_g > 350

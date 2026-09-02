@@ -1,0 +1,75 @@
+-- =========================================================================
+-- BLOCO 1: CTE 'meses'
+-- Objetivo: Criar uma lista única (distinct) de todos os meses em que houve 
+--           pedidos aprovados, servindo como base temporal para o painel.
+-- =========================================================================
+with meses as (
+    SELECT distinct
+        strftime('%Y-%m-01', order_approved_at) as mes_referencia, -- Padroniza a data para o dia 1º de cada mês (ex: '2023-01-01')
+        1 as key -- Cria uma coluna de chave estática para permitir o CROSS JOIN lógico adiante
+    from tb_orders 
+    where order_approved_at is not null
+),
+
+-- =========================================================================
+-- BLOCO 2: CTE 'primeira_venda'
+-- Objetivo: Identificar a data da primeira venda (safra) de cada vendedor.
+-- =========================================================================
+primeira_venda as (
+    SELECT 
+        t1.seller_id,
+        min(strftime('%Y-%m-01', t2.order_approved_at)) as mes_venda, -- Pega a menor data (primeira venda) padronizada por mês
+        1 as key -- Mesma chave estática para auxiliar no cruzamento
+    from tb_order_items as t1
+    left join tb_orders as t2
+        on t1.order_id = t2.order_id
+    group by t1.seller_id
+),
+
+-- =========================================================================
+-- BLOCO 3: CTE 'tratamento'
+-- Objetivo: Cruzar a grade de todos os meses com os vendedores e suas 
+--           respectivas datas de primeira venda.
+-- =========================================================================
+tratamento as (
+    SELECT  
+        t1.mes_referencia,
+        t2.seller_id,
+        t2.mes_venda
+    from meses as t1
+    left join primeira_venda as t2
+        on t1.key = t2.key -- Une todas as linhas usando a chave 1=1 (simulando um CROSS JOIN)
+), 
+
+-- =========================================================================
+-- BLOCO 4: CTE 'vendas'
+-- Objetivo: Calcular o faturamento total (preço + frete) de cada vendedor 
+--           agrupado mês a mês.
+-- =========================================================================
+vendas as (
+    SELECT
+        t1.seller_id,
+        strftime('%Y-%m-01', t2.order_approved_at) as mes_venda, -- Extrai o mês da venda para agrupar mensalmente
+        sum(t1.price) + sum(t1.freight_value) as total_vendas -- Soma o valor dos produtos + frete
+    from tb_order_items as t1
+    left join tb_orders as t2
+        on t1.order_id = t2.order_id
+    where t2.order_approved_at is not null
+    group by t1.seller_id, mes_venda -- Agrupa por vendedor e por mês de venda
+)
+
+-- =========================================================================
+-- BLOCO 5: SELECT FINAL
+-- Objetivo: Juntar a base estruturada (meses x vendedores) com as vendas 
+--           reais mensais, exibindo 0 ou NULL onde não houve venda.
+-- =========================================================================
+select 
+    t1.mes_referencia,
+    t1.seller_id,
+    t1.mes_venda,
+    coalesce(t2.total_vendas, 0) as total_vendas -- Substitui valores nulos (sem vendas no mês) por 0
+from tratamento as t1
+left join vendas as t2
+    on t1.seller_id = t2.seller_id
+    and t1.mes_referencia = t2.mes_venda -- Garante que traz o faturamento correspondente exatamente ao mês de referência
+order by t1.seller_id, t1.mes_referencia; -- Ordena a saída para facilitar a leitura visual

@@ -1,0 +1,66 @@
+-- Início da consulta utilizando CTEs (Common Table Expressions)
+WITH SELLERS AS (
+    -- Bloco 1: Cria a CTE 'SELLERS' para calcular o faturamento por vendedor e categoria de produto
+    select 
+        t1.seller_id,
+        t2.product_category_name,
+        -- Soma o preço do produto com o valor do frete para obter o valor total da venda
+        sum(t1.price) + sum(t1.freight_value) as valor_total
+    from tb_order_items as t1
+    -- Une os itens do pedido com a tabela de produtos para identificar a categoria de cada item
+    left join tb_products as t2 
+    on t1.product_id = t2.product_id
+    -- Agrupa os dados por ID do vendedor e nome da categoria do produto
+    group by t1.seller_id, t2.product_category_name
+),
+
+tratamento AS (
+    -- Bloco 2: Cria a CTE 'tratamento' para pivotar as categorias em colunas individuais 
+    -- e calcular o valor absoluto de vendas correspondente a cada uma delas por vendedor.
+    select 
+        seller_id,
+        -- Calcula o valor total geral de vendas do vendedor somando todas as categorias
+        SUM(valor_total) as valor_total,
+        
+        -- Separa o valor total caso a categoria contenha o termo correspondente
+        case WHEN product_category_name like '%alimentos%' THEN SUM(valor_total) END as alimentos,
+        case WHEN product_category_name like '%construcao%' THEN SUM(valor_total) END as construcao,     
+        case WHEN product_category_name like '%eletrodomesticos%' THEN SUM(valor_total) END as eletrodomesticos,
+        -- (Nota: A linha repetida de 'alimentos' foi mantida conforme o seu envio original)
+        case WHEN product_category_name like 'alimentos%' THEN SUM(valor_total) END as alimentos_dup,
+        case WHEN product_category_name like '%fashion%' THEN SUM(valor_total) END as fashion,
+        case WHEN product_category_name like '%livros%' THEN SUM(valor_total) END as livros,
+        case WHEN product_category_name like '%moveis%' THEN SUM(valor_total) END as moveis,
+        case WHEN product_category_name like '%telefonia%' THEN SUM(valor_total) END as telefonia,
+        
+        -- Agrupa em 'outros' todas as categorias que não se encaixam em nenhuma das regras anteriores
+        case WHEN product_category_name not like '%alimentos%' AND product_category_name not like '%construcao%' AND
+                  product_category_name not like '%eletrodomesticos%' AND
+                  product_category_name not like '%fashion%' AND
+                  product_category_name not like '%livros%' AND
+                  product_category_name not like '%moveis%' AND
+                  product_category_name not like '%telefonia%' THEN SUM(valor_total) END as outros
+    from SELLERS
+    -- Agrupa por vendedor e categoria para permitir a condicional do CASE em cima do SUM
+    group by seller_id, product_category_name
+)
+
+-- Bloco 3: Consulta principal (SELECT Final)
+-- Agrega os dados consolidados por vendedor e calcula a porcentagem de participação de cada categoria
+select 
+    seller_id,
+    -- Exibe o valor total geral formatado com arredondamento de 2 casas decimais
+    ROUND(SUM(valor_total), 2) as valor_total,
+    
+    -- Calcula a porcentagem da categoria em relação ao total geral e arredonda para 2 casas decimais
+    ROUND(SUM(alimentos) / SUM(valor_total) * 100, 2) as alimentos_percent,
+    ROUND(SUM(construcao) / SUM(valor_total) * 100, 2) as construcao_percent,
+    ROUND(SUM(eletrodomesticos) / SUM(valor_total) * 100, 2) as eletrodomesticos_percent,
+    ROUND(SUM(fashion) / SUM(valor_total) * 100, 2) as fashion_percent,
+    ROUND(SUM(livros) / SUM(valor_total) * 100, 2) as livros_percent,
+    ROUND(SUM(moveis) / SUM(valor_total) * 100, 2) as moveis_percent,
+    ROUND(SUM(telefonia) / SUM(valor_total) * 100, 2) as telefonia_percent,
+    ROUND(SUM(outros) / SUM(valor_total) * 100, 2) as outros_percent
+from tratamento
+-- Consolida todas as linhas agrupando apenas por ID do vendedor
+group by seller_id;

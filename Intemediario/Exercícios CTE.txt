@@ -1,0 +1,32 @@
+/*CTE criando uma nova tabela agrupando categoria de produtos com qtde maior que 1000*/ 
+
+WITH categorias as (
+    select 
+    product_category_name,
+    count (DISTINCT(product_id)) as Qtde_Produtos
+    from tb_products
+    group by product_category_name
+    having Qtde_Produtos >1000
+    order by Qtde_Produtos desc
+  )
+  
+  select 
+  *
+  from categorias
+
+/*CTE criando uma nova tabela agrupando categoria de produtos com qtde maior que 2000*/ 
+ WITH categorias as (
+    select 
+    product_category_name,
+    count (DISTINCT(product_id)) as Qtde_Produtos
+    from tb_products
+    group by product_category_name
+    order by Qtde_Produtos desc
+  )
+  
+  select 
+  *
+  from categorias where Qtde_Produtos >2000
+
+******************************************************** DESAFIO *************************************************************************************
+

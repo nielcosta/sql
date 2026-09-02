@@ -1,0 +1,89 @@
+/* Verificar o volume de cada produto */
+SELECT 
+product_id,
+product_category_name,
+product_length_cm * product_height_cm * product_height_cm AS product_volume
+FROM tb_products 
+
+/* Verificar Total vendido por meios de pagamento */
+SELECT 
+payment_type,
+SUM(payment_installments) as parcelas_totais,
+SUM(payment_value) as valor_total,
+SUM(payment_value)/SUM(payment_installments) as media_parcelas
+FROM tb_order_payments where payment_type ='credit_card'
+group by payment_type
+
+/* Verificar Média de peso de perfumaria*/
+SELECT
+product_category_name,
+avg(product_weight_g)
+FROM tb_products where product_category_name ='perfumaria'
+group by product_category_name
+
+
+/* Somatorio de Fotos e Comprimento Medio dos Produtos de Construção */
+SELECT
+product_category_name,
+sum(product_photos_qty) as somatorio_fotos,
+ROUND(AVG(product_length_cm), 2) as comprimento_medio
+FROM tb_products where product_category_name like 'construcao%'
+group by product_category_name
+
+
+/* Mínimo e Máximo valores dos tipos de pagamento. */
+
+SELECT
+payment_type,
+MIN(payment_value),
+MAX(payment_value)
+FROM tb_order_payments
+group by payment_type
+
+/* Ordenar por nome as categorias de produtos. */
+SELECT
+product_category_name
+FROM tb_products
+group by product_category_name
+order by product_category_name 
+
+/* Selecionar todos produtos de perfumaria e ordenar por peso (do maior para o menor). */
+
+SELECT
+product_category_name,
+product_weight_g
+FROM tb_products
+where product_category_name ='perfumaria'
+order by product_weight_g DESC
+
+/* Verificar os cinco produtos que tenham maior quantidade.. */
+
+SELECT
+product_category_name,
+count(product_category_name) as qtde_produtos
+FROM tb_products
+group by product_category_name
+order by  qtde_produtos desc
+limit 5
+
+/* Selecionar valor total de produtos vendidos por grupo maiores que 1000 - Sub Query*/
+select *
+from (
+SELECT
+order_id,
+sum (price) as valor_total
+From tb_order_items
+group by 1
+order by valor_total)
+where valor_total is not null and valor_total > 1000
+
+
+/* Selecionar valor total de produtos vendidos por grupo maiores que 7000 - having*/
+
+SELECT
+order_id,
+sum (price) as valor_total
+From tb_order_items
+group by order_id
+having valor_total >7000
+order by valor_total desc

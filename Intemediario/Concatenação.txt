@@ -1,0 +1,5 @@
+/*Concatenação*/
+
+SELECT
+order_id ||' - '||customer_id as concat
+from tb_orders

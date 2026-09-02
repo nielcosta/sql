@@ -1,0 +1,17 @@
+/* Resolução Exercício 1 - Where Or */
+
+SELECT
+    *
+FROM tb_customers
+where
+    customer_state = 'SP' or customer_state = 'RJ'
+
+
+
+/* Resolução Exercício 2 - Where Or */
+
+SELECT
+    *
+FROM tb_order_reviews
+where
+    (review_score = 4) or (review_score = 5)

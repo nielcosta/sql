@@ -1,0 +1,13 @@
+/* Resolução Exercício 1 - Where And e Or Juntos*/
+SELECT
+    *
+FROM tb_products
+where ((product_category_name like 'perfumaria' ) or (product_category_name like 'artes') )
+        and (product_weight_g >= 600) 
+
+
+
+
+
+
+

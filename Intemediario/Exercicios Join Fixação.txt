@@ -1,0 +1,51 @@
+/* Receita por Estado dos Sellers da Categoria Perfumaria */
+SELECT 
+   t1.seller_state,
+   ROUND(SUM(t2.price), 2) as Total_Price,
+   t3.product_category_name
+    
+From tb_sellers t1
+	left join tb_order_items t2
+	on t1.seller_id = t2.seller_id
+    left join tb_products t3    
+    on t2.product_id = t3.product_id
+    where t3.product_category_name = 'perfumaria'
+group by t1.seller_state
+
+/* Receita por Estado dos Sellers que possuem score-review > = 4 */
+SELECT 
+   t1.seller_state,
+   ROUND(SUM(t2.price), 2) as Total_Price,
+   t4.review_score
+    
+From tb_sellers t1
+	left join tb_order_items t2
+	on t1.seller_id = t2.seller_id
+    left join tb_orders t3
+    on t2.order_id = t3.order_id
+    left join tb_order_reviews t4    
+    on t3.order_id= t4.order_id
+where t4.review_score >=4    
+    
+group by t1.seller_state
+
+order by  sum(t2.price) desc 
+
+/* Receita por Estado dos Clientes da Categoria Perfumaria */
+SELECT 
+   t1.customer_state,
+   ROUND(SUM(t3.price), 2) as Total_Price,
+   t4.product_category_name
+    
+From tb_customers t1
+	left join tb_orders t2
+	on t1.customer_id = t2.customer_id
+    left join tb_order_items t3
+	on t2.order_id = t3.order_id
+    left join tb_products t4    
+    on t4.product_id = t3.product_id
+    where t4.product_category_name = 'perfumaria'
+group by customer_state
+
+
+

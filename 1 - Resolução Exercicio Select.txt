@@ -1,0 +1,28 @@
+/* Solução Exercício 1 
+Selecionar todos os pedidos entregues. */
+
+SELECT
+    *
+FROM tb_orders
+where order_status = 'delivered'
+
+
+/* Solução Exercício 2 
+Selecionar todos os clientes que moram em São Paulo
+
+*/
+
+SELECT
+    *
+FROM tb_customers
+WHERE customer_city = 'sao paulo'
+
+
+/* Solução Exercício 3 
+Selecionar todos os pagamentos feito  por cartão de crédito
+
+*/
+SELECT
+    *
+FROM tb_order_payments
+WHERE payment_type = 'credit_card'

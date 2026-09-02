@@ -1,0 +1,48 @@
+/* Criar novo campo de Estado a partir da SIGLA*/
+
+SELECT
+	seller_state,
+    CASE
+    	
+WHEN seller_state = 'AC' THEN 'Acre'
+        WHEN seller_state = 'AL' THEN 'Alagoas'
+        WHEN seller_state = 'AP' THEN 'Amapa'
+        WHEN seller_state = 'AM' THEN 'Amazonas'
+        WHEN seller_state = 'BA' THEN 'Bahia'
+        WHEN seller_state = 'CE' THEN 'Ceara'
+        WHEN seller_state = 'DF' THEN 'Distrito Federal'
+        WHEN seller_state = 'ES' THEN 'Espirito Santo'
+        WHEN seller_state = 'GO' THEN 'Goias'
+        WHEN seller_state = 'MA' THEN 'Maranhao'
+        WHEN seller_state = 'MT' THEN 'Mato Grosso'
+        WHEN seller_state = 'MS' THEN 'Mato Grosso do Sul'
+        WHEN seller_state = 'MG' THEN 'Minas Gerais'
+        WHEN seller_state = 'PA' THEN 'Para'
+        WHEN seller_state = 'PB' THEN 'Paraiba'
+        WHEN seller_state = 'PR' THEN 'Parana'
+        WHEN seller_state = 'PE' THEN 'Pernambuco'
+        WHEN seller_state = 'PI' THEN 'Piaui'
+        WHEN seller_state = 'RJ' THEN 'Rio de Janeiro'
+        WHEN seller_state = 'RN' THEN 'Rio Grande do Norte'
+        WHEN seller_state = 'RS' THEN 'Rio Grande do Sul'
+        WHEN seller_state = 'RO' THEN 'Rondonia'
+        WHEN seller_state = 'RR' THEN 'Roraima'
+        WHEN seller_state = 'SC' THEN 'Santa Catarina'
+        WHEN seller_state = 'SP' THEN 'Sao Paulo'
+        WHEN seller_state = 'SE' THEN 'Sergipe'
+        WHEN seller_state = 'TO' THEN 'Tocantins'
+        ELSE seller_state
+    END AS Estado
+
+FROM tb_sellers
+group by seller_state
+
+
+/*Renomear campos NULL por Sem identificação*/
+
+SELECT
+    COALESCE(product_category_name, 'Sem Identificação') AS product_category_name,
+    COALESCE(CAST(product_name_lenght AS VARCHAR), 'Sem Identificação') AS product_name_lenght,
+    COALESCE(CAST(product_description_lenght AS VARCHAR), 'Sem Identificação') AS product_description_lenght,
+    COALESCE(CAST(product_photos_qty AS VARCHAR), 'Sem Identificação') AS product_photos_qty
+FROM tb_products

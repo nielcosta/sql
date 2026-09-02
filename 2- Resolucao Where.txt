@@ -1,0 +1,15 @@
+/* Resolução Exercício 1 - Where */
+
+SELECT
+    *
+FROM tb_products
+Where product_category_name like 'perfumaria' and product_weight_g >100
+
+
+/* Resolução Exercício 2 - Where */
+
+
+SELECT
+    *
+FROM tb_order_items
+WHERE price > 50 and freight_value < 15
